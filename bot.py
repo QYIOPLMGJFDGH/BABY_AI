@@ -295,7 +295,7 @@ def run_flask():
     flask_app.run(host="0.0.0.0", port=8000)
 
     # Start polling for the bot
-    await application.run_polling()
+    application.run_polling()
 
 if __name__ == "__main__":
     # Start Flask server in a separate thread
