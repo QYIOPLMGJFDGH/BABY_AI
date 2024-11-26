@@ -274,6 +274,7 @@ def create_application():
 
     # Add command handlers
     application.add_handler(CommandHandler("start", start_command))
+    application.add_handler(CommandHandler("approved", approved_users))
     application.add_handler(CommandHandler("approve", approve_user))
     application.add_handler(CommandHandler("disapprove", disapprove_user))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
