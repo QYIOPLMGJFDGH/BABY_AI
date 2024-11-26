@@ -1,11 +1,12 @@
+import threading
+from flask import Flask
 import asyncio
 import logging
-import os
 from typing import Dict
 
 import google.generativeai as genai
 from pymongo import MongoClient
-from telegram import Update, error, Bot
+from telegram import Update, error
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.constants import ParseMode, ChatAction
 from telegram.ext import (
@@ -15,7 +16,12 @@ from telegram.ext import (
     ContextTypes,
     CommandHandler,
 )
-from flask import Flask, request, jsonify
+
+flask_app = Flask(__name__)
+
+@flask_app.route("/")
+def home():
+    return "BABYMUSIC is running on Flask and Thread!"
 
 # Enable logging
 logging.basicConfig(
@@ -23,15 +29,23 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Get API keys and settings from environment variables
-TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN", "7711977179:AAFxPfbCD14LJLTekHKkHKTq6zRUCDscNEo")
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "AIzaSyDq47CQUgrNXQ5WCgw9XDJCudlUrhyC-pY")
-CHANNEL_USERNAME = os.environ.get("CHANNEL_USERNAME", "@BABY09_WORLD")
-OWNER_ID = int(os.environ.get("OWNER_ID","7400383704"))  # Convert OWNER_ID to integer
-MONGO_URI = os.environ.get("MONGO_URI", "mongodb+srv://Yash_607:Yash_607@cluster0.r3s9sbo.mongodb.net/?retryWrites=true&w=majority")
+# Telegram Bot Token
+TELEGRAM_TOKEN = "7711977179:AAFxPfbCD14LJLTekHKkHKTq6zRUCDscNEo"
 
-DATABASE_NAME = "telegram_bot"  # Define DATABASE_NAME
+# Gemini API Key
+GEMINI_API_KEY = "AIzaSyDq47CQUgrNXQ5WCgw9XDJCudlUrhyC-pY"  # Replace with your actual Gemini API key
+
+# Channel Link
+CHANNEL_USERNAME = "@BABY09_WORLD"
+
+# Owner ID
+OWNER_ID = 7400383704
+
+# MongoDB Connection
+MONGO_URI = "mongodb+srv://Yash_607:Yash_607@cluster0.r3s9sbo.mongodb.net/?retryWrites=true&w=majority"
+DATABASE_NAME = "telegram_bot"
 COLLECTION_NAME = "authorized_users"
+
 # Configure the Gemini API
 genai.configure(api_key=GEMINI_API_KEY)
 
@@ -91,9 +105,10 @@ async def approve_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
             logger.info(f"Fetched user ID: {user_id}")
 
             # Store the authorized user in MongoDB
-            result = authorized_users_collection.insert_one(
-                {"user_id": user_id, "username": username}
-            )
+            result = authorized_users_collection.insert_one({
+                "user_id": user_id,
+                "username": username
+            })
             logger.info(f"MongoDB insertion result: {result.acknowledged}")
 
             await update.message.reply_text(f"User {username} has been approved!")
@@ -115,7 +130,8 @@ async def approve_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     except Exception as e:
         logger.exception(f"Error approving user: {e}")
-        await update.message.reply_text("An error occurred while approving the user.")
+        await update.message.reply_text(
+            "An error occurred while approving the user.")
 
 
 async def disapprove_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -126,7 +142,9 @@ async def disapprove_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.warning(
             f"Unauthorized user tried to disapprove: {update.effective_user.id}"
         )
-        await update.message.reply_text("You are not authorized to disapprove users.")
+        await update.message.reply_text(
+            "You are not authorized to disapprove users."
+        )
         return
 
     try:
@@ -143,15 +161,16 @@ async def disapprove_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
             result = authorized_users_collection.delete_one({"username": username})
 
             if result.deleted_count == 1:
-                await update.message.reply_text(f"User {username} has been disapproved.")
+                await update.message.reply_text(
+                    f"User {username} has been disapproved.")
             else:
                 await update.message.reply_text(
-                    f"User {username} not found in the approved list."
-                )
+                    f"User {username} not found in the approved list.")
 
         except error.TelegramError as e:
             if e.message == "Chat not found":
-                await update.message.reply_text(f"Error: User '{username}' not found.")
+                await update.message.reply_text(
+                    f"Error: User '{username}' not found.")
             else:
                 logger.error(f"Error getting user chat: {e}")
                 await update.message.reply_text(
@@ -165,16 +184,15 @@ async def disapprove_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         logger.exception(f"Error disapproving user: {e}")
         await update.message.reply_text(
-            "An error occurred while disapproving the user."
-        )
+            "An error occurred while disapproving the user.")
 
 
-async def check_user_in_channel(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
-):
+async def check_user_in_channel(update: Update,
+                               context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
     try:
-        chat_member = await context.bot.get_chat_member(CHANNEL_USERNAME, user_id)
+        chat_member = await context.bot.get_chat_member(CHANNEL_USERNAME,
+                                                        user_id)
         logger.info(f"Chat member status: {chat_member.status}")
         return chat_member.status in ["member", "administrator", "creator"]
     except error.TelegramError as e:
@@ -204,9 +222,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     user_message = update.message.text.lower()
 
-    await context.bot.send_chat_action(
-        chat_id=update.effective_chat.id, action=ChatAction.TYPING
-    )
+    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
 
     # Get the response from Gemini
     reply = await ask_gemini(user_message)
@@ -214,42 +230,40 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Combine typing action and response
     await update.message.reply_text(reply, parse_mode=ParseMode.MARKDOWN)
 
-
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handles the /start command."""
     try:
         # Create the inline button
         join_button = InlineKeyboardMarkup(
-            [[InlineKeyboardButton("Join 👋", url="https://t.me/BABY09_WORLD")]]
+            [
+                [InlineKeyboardButton("Join 👋", url="https://t.me/BABY09_WORLD")]
+            ]
         )
         # Send a welcome message with the button
         await update.message.reply_text(
             "Hey! I am team baby AI. How can I help you today? ask me any query",
-            reply_markup=join_button,
+            reply_markup=join_button
         )
     except Exception as e:
         logger.error(f"Error in /start command: {e}")
-
 
 async def approved_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handles the /approved command to list all approved users in numbered format."""
     # Check if the sender is the owner
     if update.effective_user.id != OWNER_ID:
-        await update.message.reply_text(
-            "You are not authorized to use this command."
-        )
+        await update.message.reply_text("You are not authorized to use this command.")
         return
-
+    
     # Fetch all approved users from the MongoDB collection
     approved_users = authorized_users_collection.find()
-
+    
     # Prepare the message with numbered list
     mentions = ""
     count = 1
     for user in approved_users:
         mentions += f"{count}. {user['username']} \n"
         count += 1
-
+    
     # If no approved users found
     if not mentions:
         await update.message.reply_text("No approved users found.")
@@ -257,40 +271,31 @@ async def approved_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Send the list of approved users in numbered format
     await update.message.reply_text(
-        f"List of approved users:\n\n{mentions}", parse_mode=ParseMode.MARKDOWN
+        f"List of approved users:\n\n{mentions}",
+        parse_mode=ParseMode.MARKDOWN
     )
 
-# Initialize Flask app for webhook
-app = Flask(__name__)
-
-@app.route('/webhook', methods=['POST'])
-def webhook():
-    if request.method == 'POST':
-        update = Update.de_json(request.get_json(), bot) 
-        application.process_update(update)
-        return jsonify({'status': 'success'})
-
-
 def main():
-    global application  # Make 'application' accessible globally
     application = Application.builder().token(TELEGRAM_TOKEN).build()
 
+    # Add command handlers
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("approve", approve_user))
     application.add_handler(CommandHandler("disapprove", disapprove_user))
-    application.add_handler(CommandHandler("approved", approved_users))
+    application.add_handler(CommandHandler("approved", approved_users))  # Add the /approved handler
 
+    # Message handler for all text messages
     application.add_handler(
         MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message)
     )
 
-    global bot  # Make 'bot' accessible globally
-    bot = Bot(TELEGRAM_TOKEN)
-
-    logger.info("Bot is running...")
-    # application.run_polling()  # Comment this out for webhook mode
-
-    app.run(debug=True, host='0.0.0.0', port=8000) 
+    def run_flask():
+    flask_app.run(host="0.0.0.0", port=8000)
 
 if __name__ == "__main__":
-    main()
+    # Flask server in a separate thread
+    flask_thread = threading.Thread(target=run_flask)
+    flask_thread.start()
+
+    # Run the async bot
+    asyncio.get_event_loop().run_until_complete(init_bot())
