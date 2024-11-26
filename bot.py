@@ -277,24 +277,25 @@ async def approved_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main():
     application = Application.builder().token(TELEGRAM_TOKEN).build()
-
+    
     # Add command handlers
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("approve", approve_user))
     application.add_handler(CommandHandler("disapprove", disapprove_user))
-    application.add_handler(CommandHandler("approved", approved_users))  # Add the /approved handler
-
-    # Message handler for all text messages
     application.add_handler(
         MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message)
     )
-
- application.run_polling()
+    
+    # Run the bot
+    application.run_polling()
 
 def run_flask():
     flask_app.run(host="0.0.0.0", port=8000)
 
 if __name__ == "__main__":
+    # Flask server in a separate thread
     flask_thread = threading.Thread(target=run_flask)
     flask_thread.start()
+
+    # Run the main bot function
     main()
