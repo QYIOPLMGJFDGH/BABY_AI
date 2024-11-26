@@ -201,34 +201,38 @@ async def check_user_in_channel(update: Update,
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not update.effective_user:
+        logger.warning("Received a message without an associated user.")
+        return  # Ignore updates without a user
+
     user_id = update.effective_user.id
 
-    # Check authorization AND channel membership
+    # Check if the user is authorized
     authorized = await is_authorized(user_id)
-    member_of_channel = await check_user_in_channel(update, context)
-
     if not authorized:
         await update.message.reply_text(
-            "You are not authorized to use this bot. Please contact @UTTAM470 for authorize."
+            "You are not authorized to use this bot. Please contact @UTTAM470 for authorization."
         )
         return
 
+    # Ensure the user is a member of the channel
+    member_of_channel = await check_user_in_channel(update, context)
     if not member_of_channel:
         await update.message.reply_text(
-            f"Please join the channel {CHANNEL_USERNAME} to use the bot:",
+            f"Please join the channel {CHANNEL_USERNAME} to use the bot.",
             parse_mode=ParseMode.HTML,
         )
         return
 
-    user_message = update.message.text.lower()
-
+    user_message = update.message.text
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
 
     # Get the response from Gemini
     reply = await ask_gemini(user_message)
 
-    # Combine typing action and response
+    # Send the response to the user
     await update.message.reply_text(reply, parse_mode=ParseMode.MARKDOWN)
+
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handles the /start command."""
