@@ -283,7 +283,6 @@ async def aexec(code: str, update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     return await locals()["__aexec"](update, context, context.application)
 
-
 async def eval_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """
     Handles the /eval command for dynamic code execution.
@@ -330,7 +329,10 @@ async def eval_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         evaluation += "Success"
 
-    final_output = f"<b>⥤ Result :</b>\n<pre language='python'>{evaluation}</pre>"
+    # Escape the evaluation output for safe HTML rendering
+    evaluation = html.escape(evaluation)
+
+    final_output = f"<b>⥤ Result :</b>\n<pre>{evaluation}</pre>"
     if len(final_output) > 4096:
         filename = "output.txt"
         with open(filename, "w+", encoding="utf8") as out_file:
@@ -348,7 +350,7 @@ async def eval_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         await update.message.reply_document(
             document=filename,
-            caption=f"<b>⥤ Eval :</b>\n<code>{cmd[0:980]}</code>\n\n<b>⥤ Result :</b>\nAttached Document",
+            caption=f"<b>⥤ Eval :</b>\n<code>{html.escape(cmd[0:980])}</code>\n\n<b>⥤ Result :</b>\nAttached Document",
             parse_mode=ParseMode.HTML,
             reply_markup=keyboard,
         )
@@ -370,8 +372,6 @@ async def eval_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ]
         )
         await update.message.reply_text(final_output, parse_mode=ParseMode.HTML, reply_markup=keyboard)
-
-
 
 def create_application():
     application = Application.builder().token(TELEGRAM_TOKEN).build()
