@@ -9,7 +9,7 @@ import html
 from io import StringIO
 import google.generativeai as genai
 from pymongo import MongoClient
-from telegram import Update, error, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import Update, error, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from telegram.constants import ParseMode, ChatAction
 from telegram.ext import (
     Application,
@@ -333,17 +333,19 @@ async def eval_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     evaluation = html.escape(evaluation)
 
     final_output = f"<b>⥤ Result :</b>\n<pre>{evaluation}</pre>"
+    t2 = time()
+    execution_time = round(t2 - t1, 3)
+
     if len(final_output) > 4096:
         filename = "output.txt"
         with open(filename, "w+", encoding="utf8") as out_file:
             out_file.write(str(evaluation))
-        t2 = time()
         keyboard = InlineKeyboardMarkup(
             [
                 [
                     InlineKeyboardButton(
                         text="Execution Time",
-                        callback_data=f"runtime {round(t2 - t1, 3)} Seconds",
+                        callback_data=f"runtime {execution_time} Seconds",
                     )
                 ]
             ]
@@ -356,13 +358,12 @@ async def eval_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         os.remove(filename)
     else:
-        t2 = time()
         keyboard = InlineKeyboardMarkup(
             [
                 [
                     InlineKeyboardButton(
                         text="Execution Time",
-                        callback_data=f"runtime {round(t2 - t1, 3)} Seconds",
+                        callback_data=f"runtime {execution_time} Seconds",
                     ),
                     InlineKeyboardButton(
                         text="Close",
@@ -373,6 +374,30 @@ async def eval_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         await update.message.reply_text(final_output, parse_mode=ParseMode.HTML, reply_markup=keyboard)
 
+
+# Handler for Execution Time button
+async def runtime_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query: CallbackQuery = update.callback_query
+    data = query.data
+
+    if data.startswith("runtime"):
+        execution_time = data.split(" ")[1]
+        await query.answer(f"Execution Time: {execution_time}")
+
+# Handler for Close button
+async def close_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query: CallbackQuery = update.callback_query
+    data = query.data
+
+    if data.startswith("forceclose"):
+        user_id = data.split("|")[1]
+        if str(query.from_user.id) == user_id:  # Ensure only the initiating user can close
+            await query.message.delete()
+            await query.answer("Closed")
+        else:
+            await query.answer("You are not authorized to close this message.", show_alert=True)
+
+
 def create_application():
     application = Application.builder().token(TELEGRAM_TOKEN).build()
 
@@ -381,7 +406,9 @@ def create_application():
     application.add_handler(CommandHandler("approved", approved_users))
     application.add_handler(CommandHandler("approve", approve_user))
     application.add_handler(CommandHandler("disapprove", disapprove_user))
-    application.add_handler(CommandHandler("eval", eval_command))  # Eval command
+    application.add_handler(CallbackQueryHandler(runtime_callback, pattern="^runtime"))  # Execution time handler
+    application.add_handler(CallbackQueryHandler(close_callback, pattern="^forceclose"))  # Close button handler
+    application.add_handler(CommandHandler("eval", eval_command))  # Eval commandcommand
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     return application
