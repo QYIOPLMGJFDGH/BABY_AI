@@ -17,12 +17,6 @@ from telegram.ext import (
     CommandHandler,
 )
 
-flask_app = Flask(__name__)
-
-@flask_app.route("/")
-def home():
-    return "BABYMUSIC is running"
-
 # Enable logging
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
@@ -289,6 +283,12 @@ def main():
     application.add_handler(
         MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message)
     )
+
+flask_app = Flask(__name__)
+
+@flask_app.route("/")
+def home():
+    return "BABYMUSIC is running"
     
     # Run the bot
     application.run_polling()
