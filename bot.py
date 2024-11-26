@@ -5,7 +5,7 @@ from typing import Dict
 
 import google.generativeai as genai
 from pymongo import MongoClient
-from telegram import Update, error
+from telegram import Update, error, Bot
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.constants import ParseMode, ChatAction
 from telegram.ext import (
