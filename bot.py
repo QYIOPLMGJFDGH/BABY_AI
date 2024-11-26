@@ -7,6 +7,7 @@ import traceback
 import sys
 import html
 from io import StringIO
+from telegram.ext import CallbackQueryHandler  # Missing import for handling callbacks
 import google.generativeai as genai
 from pymongo import MongoClient
 from telegram import Update, error, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
