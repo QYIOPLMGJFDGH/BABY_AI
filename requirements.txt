@@ -1,0 +1,3 @@
+google-generativeai
+pymongo
+python-telegram-bot
