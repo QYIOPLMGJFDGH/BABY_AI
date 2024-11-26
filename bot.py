@@ -6,6 +6,7 @@ from typing import Dict
 import traceback
 import sys
 from io import StringIO
+import google.generativeai as genai
 from pymongo import MongoClient
 from telegram import Update, error, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.constants import ParseMode, ChatAction
