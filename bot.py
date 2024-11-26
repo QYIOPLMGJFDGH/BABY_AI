@@ -3,11 +3,11 @@ import threading
 from flask import Flask 
 import logging
 from typing import Dict
-
-import google.generativeai as genai
+import traceback
+import sys
+from io import StringIO
 from pymongo import MongoClient
-from telegram import Update, error
-from telegram import InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import Update, error, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.constants import ParseMode, ChatAction
 from telegram.ext import (
     Application,
