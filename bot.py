@@ -345,7 +345,7 @@ async def eval_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [
                 [
                     InlineKeyboardButton(
-                        text="Execution Time",
+                        text="Time",
                         callback_data=f"runtime {execution_time} Seconds",
                     )
                 ]
@@ -363,7 +363,7 @@ async def eval_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [
                 [
                     InlineKeyboardButton(
-                        text="Execution Time",
+                        text="Time",
                         callback_data=f"runtime {execution_time} Seconds",
                     ),
                     InlineKeyboardButton(
