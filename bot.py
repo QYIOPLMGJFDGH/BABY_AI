@@ -120,7 +120,7 @@ async def approve_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     except IndexError:
         await update.message.reply_text(
-            "Please provide a username to approve. Usage: `/approve @username`"
+            "Please provide a username to approve. Usage: `/approve userid`"
         )
     except Exception as e:
         logger.exception(f"Error approving user: {e}")
@@ -173,7 +173,7 @@ async def disapprove_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     except IndexError:
         await update.message.reply_text(
-            "Please provide a username to disapprove. Usage: `/disapprove @username`"
+            "Please provide a username to disapprove. Usage: `/disapprove userid`"
         )
     except Exception as e:
         logger.exception(f"Error disapproving user: {e}")
