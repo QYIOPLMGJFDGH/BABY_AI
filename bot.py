@@ -265,43 +265,32 @@ app = Flask(__name__)
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
-    """
-    This function handles incoming Telegram updates through a webhook.
-    """
     if request.method == 'POST':
-        update = request.get_json()
-        
-        # ---  Here you need to adapt the update handling ---
-        # 1. Create an Update object from the incoming JSON
-        # update = Update.de_json(update, bot)  # 'bot' needs to be your bot instance
-        
-        # 2. Pass the update to your Telegram bot's dispatcher
-        # application.process_update(update) 
-        # ---------------------------------------------------
-
-        return jsonify({'status': 'success'})  # Acknowledge update received
+        update = Update.de_json(request.get_json(), bot) 
+        application.process_update(update)
+        return jsonify({'status': 'success'})
 
 
 def main():
+    global application  # Make 'application' accessible globally
     application = Application.builder().token(TELEGRAM_TOKEN).build()
 
-    # Add command handlers
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("approve", approve_user))
     application.add_handler(CommandHandler("disapprove", disapprove_user))
     application.add_handler(CommandHandler("approved", approved_users))
 
-    # Message handler for all text messages
     application.add_handler(
         MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message)
     )
 
-    # Start the bot
-    logger.info("Bot is running...")
-    # application.run_polling()  # Comment out for webhook mode
+    global bot  # Make 'bot' accessible globally
+    bot = Bot(TELEGRAM_TOKEN)
 
-    # --- Start Flask app for webhook ---
-    app.run(debug=True, host='0.0.0.0', port=8000)
+    logger.info("Bot is running...")
+    # application.run_polling()  # Comment this out for webhook mode
+
+    app.run(debug=True, host='0.0.0.0', port=8000) 
 
 if __name__ == "__main__":
     main()
