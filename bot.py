@@ -1,4 +1,6 @@
 import asyncio
+import threading
+from flask import Flask 
 import logging
 from typing import Dict
 
@@ -268,23 +270,41 @@ async def approved_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode=ParseMode.MARKDOWN
     )
 
-def main():
+def create_application():
     application = Application.builder().token(TELEGRAM_TOKEN).build()
 
     # Add command handlers
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("approve", approve_user))
     application.add_handler(CommandHandler("disapprove", disapprove_user))
-    application.add_handler(CommandHandler("approved", approved_users))  # Add the /approved handler
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    # Message handler for all text messages
-    application.add_handler(
-        MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message)
-    )
+    return application
 
+
+# Flask app
+flask_app = Flask(__name__)
+
+@flask_app.route("/")
+def home():
+    return "BABYMUSIC is running"
+
+
+def run_flask():
+    flask_app.run(host="0.0.0.0", port=8000)
+
+
+def run_bot():
     # Start the bot
-    logger.info("Bot is running...")
+    application = create_application()
     application.run_polling()
 
+
 if __name__ == "__main__":
-    main()
+    # Start Flask server in a separate thread
+    flask_thread = threading.Thread(target=run_flask)
+    flask_thread.daemon = True  # Ensure Flask stops when the main program stops
+    flask_thread.start()
+
+    # Start the bot in the main thread
+    run_bot()  # Run the bot directly without asyncio
