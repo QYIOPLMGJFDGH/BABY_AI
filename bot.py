@@ -1,4 +1,5 @@
 import asyncio
+import requests
 import threading
 from flask import Flask 
 import logging
@@ -418,6 +419,78 @@ async def handle_tb_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await handle_message(update, context)
 
 
+import requests
+
+async def handle_bb_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handles the /bb command to fetch responses from the external API."""
+    user_id = update.effective_user.id
+
+    # Check if the user is authorized
+    if not await is_authorized(user_id):
+        await update.message.reply_text(
+            "You are not authorized to use this command. Please contact @UTTAM470 for approval."
+        )
+        return
+
+    # Check if the user is a member of the channel
+    if not await check_user_in_channel(update, context):
+        await update.message.reply_text(
+            f"Please join the channel {CHANNEL_USERNAME} to use the bot.",
+            parse_mode=ParseMode.HTML
+        )
+        return
+
+    # Ensure a query is provided
+    if len(context.args) < 1:
+        await update.message.reply_text(
+            "Please provide me your query after /bb. For example: `/bb your question`",
+            parse_mode=ParseMode.MARKDOWN
+        )
+        return
+
+    # Extract the query
+    query = " ".join(context.args)
+
+    # Inform the user that the bot is processing their request
+    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
+
+    # API request logic
+    API_KEY = "abacf43bf0ef13f467283e5bc03c2e1f29dae4228e8c612d785ad428b32db6ce"
+    BASE_URL = "https://api.together.xyz/v1/chat/completions"
+    
+    headers = {
+        "Authorization": f"Bearer {API_KEY}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "model": "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo",
+        "messages": [
+            {
+                "role": "user",
+                "content": query
+            }
+        ]
+    }
+    
+    try:
+        response = requests.post(BASE_URL, json=payload, headers=headers)
+        if response.status_code == 200 and response.text.strip():
+            response_data = response.json()
+            if "choices" in response_data and len(response_data["choices"]) > 0:
+                result = response_data["choices"][0]["message"]["content"]
+                await update.message.reply_text(
+                    f"{result}\n\nＡɴsᴡᴇʀᴇᴅ ʙʏ ➛ [˹ ʙᴀʙʏ-ᴍᴜsɪᴄ ™˼𓅂](https://t.me/BABY09_WORLD)",
+                    parse_mode=ParseMode.MARKDOWN
+                )
+            else:
+                await update.message.reply_text("❍ ᴇʀʀᴏʀ: No response from the API.")
+        else:
+            await update.message.reply_text(f"❍ ᴇʀʀᴏʀ: API request failed. Status code: {response.status_code}")
+    except Exception as e:
+        await update.message.reply_text(f"❍ ᴇʀʀᴏʀ: {str(e)}")
+
+
 def create_application():
     application = Application.builder().token(TELEGRAM_TOKEN).build()
 
@@ -426,14 +499,15 @@ def create_application():
     application.add_handler(CommandHandler("approved", approved_users))
     application.add_handler(CommandHandler("approve", approve_user))
     application.add_handler(CommandHandler("disapprove", disapprove_user))
+    application.add_handler(CommandHandler("run", eval_command))  # Eval command
+    application.add_handler(CommandHandler("bb", handle_bb_command))  # /bb command
     application.add_handler(CallbackQueryHandler(runtime_callback, pattern="^runtime"))  # Execution time handler
     application.add_handler(CallbackQueryHandler(close_callback, pattern="^forceclose"))  # Close button handler
-    application.add_handler(CommandHandler("run", eval_command))  # Eval commandcommand
     application.add_handler(MessageHandler(filters.TEXT & filters.Regex(r'^/tb$'), handle_tb_command))  # Handle only "/tb"
     application.add_handler(MessageHandler(filters.TEXT & filters.Regex(r'^/tb .*'), handle_message))  # Handle "/tb <query>"
 
-
     return application
+
 
 # Flask app
 flask_app = Flask(__name__)
