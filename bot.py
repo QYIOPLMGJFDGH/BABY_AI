@@ -10,12 +10,12 @@ from io import StringIO
 from telegram.ext import CallbackQueryHandler  # Missing import for handling callbacks
 import google.generativeai as genai
 from pymongo import MongoClient
+from telegram.ext import filters
 from telegram import Update, error, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from telegram.constants import ParseMode, ChatAction
 from telegram.ext import (
     Application,
     MessageHandler,
-    filters,
     ContextTypes,
     CommandHandler,
 )
@@ -207,7 +207,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if not authorized:
         await update.message.reply_text(
-            "You are not authorized to use this bot. Please contact @UTTAM470 for authorize."
+            "You are not authorized to use this bot. Please contact @UTTAM470 for authorization."
         )
         return
 
@@ -410,7 +410,7 @@ def create_application():
     application.add_handler(CallbackQueryHandler(runtime_callback, pattern="^runtime"))  # Execution time handler
     application.add_handler(CallbackQueryHandler(close_callback, pattern="^forceclose"))  # Close button handler
     application.add_handler(CommandHandler("run", eval_command))  # Eval commandcommand
-    application.add_handler(MessageHandler("tb", handle_message))
+    application.add_handler(MessageHandler(filters.TEXT & filters.Regex('^tb$'), handle_message))
 
     return application
 
