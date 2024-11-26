@@ -21,7 +21,7 @@ flask_app = Flask(__name__)
 
 @flask_app.route("/")
 def home():
-    return "BABYMUSIC is running on Flask and Thread!"
+    return "BABYMUSIC is running"
 
 # Enable logging
 logging.basicConfig(
