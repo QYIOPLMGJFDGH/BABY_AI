@@ -282,11 +282,9 @@ def main():
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("approve", approve_user))
     application.add_handler(CommandHandler("disapprove", disapprove_user))
-    application.add_handler(
-        MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message)
-    )
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    # Start polling for the bot
+    # Start the bot polling
     application.run_polling()
 
 
@@ -297,7 +295,6 @@ def home():
     return "BABYMUSIC is running"
 
 
-# Function to run Flask
 def run_flask():
     flask_app.run(host="0.0.0.0", port=8000)
 
@@ -308,5 +305,5 @@ if __name__ == "__main__":
     flask_thread.daemon = True  # Ensure Flask stops when the main program stops
     flask_thread.start()
 
-    # Run the bot
-    asyncio.run(main())  # Start the bot in the event loop
+    # Run the bot directly
+    main()  # Start the bot using Application.run_polling()
