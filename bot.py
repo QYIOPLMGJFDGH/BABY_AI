@@ -221,19 +221,40 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handles the /start command."""
     try:
-        # Create the inline button
+        # Inline button to join the channel
         join_button = InlineKeyboardMarkup(
             [
                 [InlineKeyboardButton("Join 👋", url="https://t.me/BABY09_WORLD")]
             ]
         )
-        # Send a welcome message with the button
+        
+        # Message with all commands information
+        start_message = """
+Hey! I am Team Baby AI. How can I help you today? Below are the available commands you can use:
+
+<b>Commands:</b>
+1. <code>/start</code> - Start the bot and see this help message.
+2. <code>/approve &lt;username&gt;</code> - Approve a user to access the bot. (Admin only)
+3. <code>/disapprove &lt;username&gt;</code> - Revoke access of a user. (Admin only)
+4. <code>/approved</code> - List all approved users. (Admin only)
+5. <code>/tb &lt;query&gt;</code> - Ask any query or get an baby AI response. 
+   - Example: <code>/tb What is the Taj Mahal?</code>
+6. <code>/run &lt;code&gt;</code> - Execute Python code dynamically (only for authorized users).
+
+<b>Note:</b> You must join our channel @BABY09_WORLD to use this bot.
+
+Feel free to ask any question using the <code>/tb</code> command!
+        """
+
+        # Send the message
         await update.message.reply_text(
-            "Hey! I am team baby AI. How can I help you today? ask me any /tb query",
-            reply_markup=join_button
+            start_message,
+            reply_markup=join_button,
+            parse_mode=ParseMode.HTML
         )
     except Exception as e:
         logger.error(f"Error in /start command: {e}")
+
 
 async def approved_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handles the /approved command to list all approved users in numbered format."""
