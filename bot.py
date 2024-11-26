@@ -25,8 +25,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Telegram Bot Token
-TELEGRAM_TOKEN = "7711977179:AAFxPfbCD14LJLTekHKkHKTq6zRUCDscNEo"
-
+TELEGRAM_TOKEN = "8007949478:AAGVaf6zO-V1aS2CH4fgJLoxbRXT_gKvm1o"
 # Gemini API Key
 GEMINI_API_KEY = "AIzaSyDq47CQUgrNXQ5WCgw9XDJCudlUrhyC-pY"  # Replace with your actual Gemini API key
 
