@@ -1,7 +1,5 @@
-import threading
 import asyncio
 import logging
-from flask import Flask
 from typing import Dict
 
 import google.generativeai as genai
@@ -16,6 +14,7 @@ from telegram.ext import (
     ContextTypes,
     CommandHandler,
 )
+
 
 # Enable logging
 logging.basicConfig(
@@ -195,38 +194,34 @@ async def check_user_in_channel(update: Update,
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not update.effective_user:
-        logger.warning("Received a message without an associated user.")
-        return  # Ignore updates without a user
-
     user_id = update.effective_user.id
 
-    # Check if the user is authorized
+    # Check authorization AND channel membership
     authorized = await is_authorized(user_id)
+    member_of_channel = await check_user_in_channel(update, context)
+
     if not authorized:
         await update.message.reply_text(
-            "You are not authorized to use this bot. Please contact @UTTAM470 for authorization."
+            "You are not authorized to use this bot. Please contact @UTTAM470 for authorize."
         )
         return
 
-    # Ensure the user is a member of the channel
-    member_of_channel = await check_user_in_channel(update, context)
     if not member_of_channel:
         await update.message.reply_text(
-            f"Please join the channel {CHANNEL_USERNAME} to use the bot.",
+            f"Please join the channel {CHANNEL_USERNAME} to use the bot:",
             parse_mode=ParseMode.HTML,
         )
         return
 
-    user_message = update.message.text
+    user_message = update.message.text.lower()
+
     await context.bot.send_chat_action(chat_id=update.effective_chat.id, action=ChatAction.TYPING)
 
     # Get the response from Gemini
     reply = await ask_gemini(user_message)
 
-    # Send the response to the user
+    # Combine typing action and response
     await update.message.reply_text(reply, parse_mode=ParseMode.MARKDOWN)
-
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handles the /start command."""
@@ -245,7 +240,6 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         logger.error(f"Error in /start command: {e}")
 
-
 async def approved_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handles the /approved command to list all approved users in numbered format."""
     # Check if the sender is the owner
@@ -260,9 +254,9 @@ async def approved_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
     mentions = ""
     count = 1
     for user in approved_users:
-        mentions += f"{count}. @{user['username']}\n"
+        mentions += f"{count}. {user['username']} \n"
         count += 1
-
+    
     # If no approved users found
     if not mentions:
         await update.message.reply_text("No approved users found.")
@@ -274,42 +268,23 @@ async def approved_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode=ParseMode.MARKDOWN
     )
 
-
-def create_application():
+def main():
     application = Application.builder().token(TELEGRAM_TOKEN).build()
 
     # Add command handlers
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("approve", approve_user))
     application.add_handler(CommandHandler("disapprove", disapprove_user))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    application.add_handler(CommandHandler("approved", approved_users))  # Add the /approved handler
 
-    return application
+    # Message handler for all text messages
+    application.add_handler(
+        MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message)
+    )
 
-
-# Flask app
-flask_app = Flask(__name__)
-
-@flask_app.route("/")
-def home():
-    return "BABYMUSIC is running"
-
-
-def run_flask():
-    flask_app.run(host="0.0.0.0", port=8000)
-
-
-def run_bot():
     # Start the bot
-    application = create_application()
+    logger.info("Bot is running...")
     application.run_polling()
 
-
 if __name__ == "__main__":
-    # Start Flask server in a separate thread
-    flask_thread = threading.Thread(target=run_flask)
-    flask_thread.daemon = True  # Ensure Flask stops when the main program stops
-    flask_thread.start()
-
-    # Start the bot in the main thread
-    run_bot()  # Run the bot directly without asyncio
+    main()
