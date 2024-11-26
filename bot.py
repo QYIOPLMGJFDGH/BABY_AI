@@ -289,7 +289,7 @@ def main():
         MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message)
     )
 
-    def run_flask():
+ def run_flask():
     flask_app.run(host="0.0.0.0", port=8000)
 
 if __name__ == "__main__":
