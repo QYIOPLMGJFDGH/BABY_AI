@@ -275,7 +275,7 @@ async def approved_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
-def main():
+def create_application():
     application = Application.builder().token(TELEGRAM_TOKEN).build()
 
     # Add command handlers
@@ -284,10 +284,10 @@ def main():
     application.add_handler(CommandHandler("disapprove", disapprove_user))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    # Start the bot polling
-    application.run_polling()
+    return application
 
 
+# Flask app
 flask_app = Flask(__name__)
 
 @flask_app.route("/")
@@ -299,11 +299,17 @@ def run_flask():
     flask_app.run(host="0.0.0.0", port=8000)
 
 
+def run_bot():
+    # Start the bot
+    application = create_application()
+    application.run_polling()
+
+
 if __name__ == "__main__":
     # Start Flask server in a separate thread
     flask_thread = threading.Thread(target=run_flask)
     flask_thread.daemon = True  # Ensure Flask stops when the main program stops
     flask_thread.start()
 
-    # Run the bot directly
-    main()  # Start the bot using Application.run_polling()
+    # Start the bot in the main thread
+    run_bot()  # Run the bot directly without asyncio
