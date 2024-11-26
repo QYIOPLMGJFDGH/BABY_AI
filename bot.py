@@ -269,6 +269,107 @@ async def approved_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode=ParseMode.MARKDOWN
     )
 
+async def aexec(code: str, update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    Asynchronous execution of the provided code string.
+    Injects variables: `update`, `context`, and `application`.
+    """
+    exec(
+        f"async def __aexec(update, context, application): " +
+        "".join(f"\n {line}" for line in code.split("\n"))
+    )
+    return await locals()["__aexec"](update, context, context.application)
+
+
+async def eval_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """
+    Handles the /eval command for dynamic code execution.
+    Only authorized users can execute this command.
+    """
+    user_id = update.effective_user.id
+
+    # Check if the user is authorized
+    if not await is_authorized(user_id):
+        await update.message.reply_text(
+            "You are not authorized to use this command. Please contact @UTTAM470 for approval."
+        )
+        return
+
+    if len(context.args) < 1:
+        await update.message.reply_text("<b>What do you want to execute?</b>", parse_mode=ParseMode.HTML)
+        return
+
+    cmd = " ".join(context.args)  # Extract the code to be executed
+    t1 = time()
+    old_stderr = sys.stderr
+    old_stdout = sys.stdout
+    redirected_output = sys.stdout = StringIO()
+    redirected_error = sys.stderr = StringIO()
+    stdout, stderr, exc = None, None, None
+
+    try:
+        await aexec(cmd, update, context)
+    except Exception:
+        exc = traceback.format_exc()
+
+    stdout = redirected_output.getvalue()
+    stderr = redirected_error.getvalue()
+    sys.stdout = old_stdout
+    sys.stderr = old_stderr
+
+    evaluation = "\n"
+    if exc:
+        evaluation += exc
+    elif stderr:
+        evaluation += stderr
+    elif stdout:
+        evaluation += stdout
+    else:
+        evaluation += "Success"
+
+    final_output = f"<b>⥤ Result :</b>\n<pre language='python'>{evaluation}</pre>"
+    if len(final_output) > 4096:
+        filename = "output.txt"
+        with open(filename, "w+", encoding="utf8") as out_file:
+            out_file.write(str(evaluation))
+        t2 = time()
+        keyboard = InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        text="Execution Time",
+                        callback_data=f"runtime {round(t2 - t1, 3)} Seconds",
+                    )
+                ]
+            ]
+        )
+        await update.message.reply_document(
+            document=filename,
+            caption=f"<b>⥤ Eval :</b>\n<code>{cmd[0:980]}</code>\n\n<b>⥤ Result :</b>\nAttached Document",
+            parse_mode=ParseMode.HTML,
+            reply_markup=keyboard,
+        )
+        os.remove(filename)
+    else:
+        t2 = time()
+        keyboard = InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        text="Execution Time",
+                        callback_data=f"runtime {round(t2 - t1, 3)} Seconds",
+                    ),
+                    InlineKeyboardButton(
+                        text="Close",
+                        callback_data=f"forceclose abc|{update.effective_user.id}",
+                    ),
+                ]
+            ]
+        )
+        await update.message.reply_text(final_output, parse_mode=ParseMode.HTML, reply_markup=keyboard)
+
+
+
 def create_application():
     application = Application.builder().token(TELEGRAM_TOKEN).build()
 
@@ -277,10 +378,10 @@ def create_application():
     application.add_handler(CommandHandler("approved", approved_users))
     application.add_handler(CommandHandler("approve", approve_user))
     application.add_handler(CommandHandler("disapprove", disapprove_user))
+    application.add_handler(CommandHandler("eval", eval_command))  # Eval command
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     return application
-
 
 # Flask app
 flask_app = Flask(__name__)
