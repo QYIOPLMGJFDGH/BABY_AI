@@ -5,6 +5,7 @@ import logging
 from typing import Dict
 import traceback
 import sys
+import html
 from io import StringIO
 import google.generativeai as genai
 from pymongo import MongoClient
