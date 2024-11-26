@@ -234,17 +234,19 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 Hey! I am Team Baby AI. How can I help you today? Below are the available commands you can use:
 
 <b>Commands:</b>
-1. <code>/start</code> - Start the bot and see this help message.
-2. <code>/approve &lt;username&gt;</code> - Approve a user to access the bot. (Admin only)
-3. <code>/disapprove &lt;username&gt;</code> - Revoke access of a user. (Admin only)
-4. <code>/approved</code> - List all approved users. (Admin only)
-5. <code>/tb &lt;query&gt;</code> - Ask any query or get an baby AI response. 
-   - Example: <code>/tb i want make ai tools?</code>
-6. <code>/run &lt;code&gt;</code> - Execute Python code dynamically (only for authorized users).
+1. /start - Start the bot and see this help message.
+2. /approve &lt;username&gt; - Approve a user to access the bot. (Admin only)
+3. /disapprove &lt;username&gt; - Revoke access of a user. (Admin only)
+4. /approved - List all approved users. (Admin only)
+5. /tb &lt;query&gt; - Ask any query or get an baby AI response. 
+   - Example: /tb i want make ai tools?
+6. /bb &lt;query&gt; - Ask any query get an baby Advance AI response to. 
+   - Example: /bb make a business code in python?
+7. /run &lt;code&gt; - Execute Python code dynamically (only for authorized users).
 
 <b>Note:</b> You must join our channel @BABY09_WORLD to use this bot.
 
-Feel free to ask any question using the <code>/tb</code> command!
+Feel free to ask any question using the /tb command & using advance ai /bb command !
         """
 
         # Send the message
