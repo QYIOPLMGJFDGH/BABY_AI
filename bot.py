@@ -1,7 +1,7 @@
 import threading
-from flask import Flask
 import asyncio
 import logging
+from flask import Flask
 from typing import Dict
 
 import google.generativeai as genai
@@ -245,6 +245,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         logger.error(f"Error in /start command: {e}")
 
+
 async def approved_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handles the /approved command to list all approved users in numbered format."""
     # Check if the sender is the owner
@@ -304,4 +305,4 @@ if __name__ == "__main__":
     flask_thread.start()
 
     # Run the bot
-    asyncio.run(init_bot())
+    asyncio.run(main())  # Start the bot in the event loop
