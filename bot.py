@@ -30,6 +30,8 @@ CHANNEL_USERNAME = os.environ.get("CHANNEL_USERNAME", "@BABY09_WORLD")
 OWNER_ID = int(os.environ.get("OWNER_ID","7400383704"))  # Convert OWNER_ID to integer
 MONGO_URI = os.environ.get("MONGO_URI", "mongodb+srv://Yash_607:Yash_607@cluster0.r3s9sbo.mongodb.net/?retryWrites=true&w=majority")
 
+DATABASE_NAME = "telegram_bot"  # Define DATABASE_NAME
+COLLECTION_NAME = "authorized_users"
 # Configure the Gemini API
 genai.configure(api_key=GEMINI_API_KEY)
 
