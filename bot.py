@@ -388,6 +388,14 @@ async def close_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         else:
             await query.answer("You are not authorized to close this message.", show_alert=True)
 
+async def handle_tb_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # Check if the user has only sent "/tb" without additional text
+    if update.message.text.strip() == "/tb":
+        await update.message.reply_text("Please provide me your query after /tb. For example: `/tb your question`", parse_mode=ParseMode.MARKDOWN)
+    else:
+        # If there's more text, process it as a normal query
+        await handle_message(update, context)
+
 
 def create_application():
     application = Application.builder().token(TELEGRAM_TOKEN).build()
@@ -400,7 +408,9 @@ def create_application():
     application.add_handler(CallbackQueryHandler(runtime_callback, pattern="^runtime"))  # Execution time handler
     application.add_handler(CallbackQueryHandler(close_callback, pattern="^forceclose"))  # Close button handler
     application.add_handler(CommandHandler("run", eval_command))  # Eval commandcommand
-    application.add_handler(MessageHandler(filters.TEXT & filters.Regex(r'^/tb.*'), handle_message))
+    application.add_handler(MessageHandler(filters.TEXT & filters.Regex(r'^/tb$'), handle_tb_command))  # Handle only "/tb"
+    application.add_handler(MessageHandler(filters.TEXT & filters.Regex(r'^/tb .*'), handle_message))  # Handle "/tb <query>"
+
 
     return application
 
