@@ -260,9 +260,9 @@ async def approved_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
     mentions = ""
     count = 1
     for user in approved_users:
-        mentions += f"{count}. {user['username']} \n"
+        mentions += f"{count}. @{user['username']}\n"
         count += 1
-    
+
     # If no approved users found
     if not mentions:
         await update.message.reply_text("No approved users found.")
@@ -274,9 +274,10 @@ async def approved_users(update: Update, context: ContextTypes.DEFAULT_TYPE):
         parse_mode=ParseMode.MARKDOWN
     )
 
+
 def main():
     application = Application.builder().token(TELEGRAM_TOKEN).build()
-    
+
     # Add command handlers
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("approve", approve_user))
@@ -285,18 +286,21 @@ def main():
         MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message)
     )
 
+    # Start polling for the bot
+    application.run_polling()
+
+
 flask_app = Flask(__name__)
 
 @flask_app.route("/")
 def home():
     return "BABYMUSIC is running"
 
+
 # Function to run Flask
 def run_flask():
     flask_app.run(host="0.0.0.0", port=8000)
 
-    # Start polling for the bot
-    application.run_polling()
 
 if __name__ == "__main__":
     # Start Flask server in a separate thread
