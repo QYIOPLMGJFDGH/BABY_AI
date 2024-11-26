@@ -24,11 +24,11 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Get API keys and settings from environment variables
-TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-CHANNEL_USERNAME = os.environ.get("CHANNEL_USERNAME")
-OWNER_ID = int(os.environ.get("OWNER_ID"))  # Convert OWNER_ID to integer
-MONGO_URI = os.environ.get("MONGO_URI")
+TELEGRAM_TOKEN = os.environ.get("7711977179:AAFxPfbCD14LJLTekHKkHKTq6zRUCDscNEo")
+GEMINI_API_KEY = os.environ.get("AIzaSyDq47CQUgrNXQ5WCgw9XDJCudlUrhyC-pY")
+CHANNEL_USERNAME = os.environ.get("@BABY09_WORLD")
+OWNER_ID = int(os.environ.get("7400383704"))  # Convert OWNER_ID to integer
+MONGO_URI = os.environ.get("mongodb+srv://Yash_607:Yash_607@cluster0.r3s9sbo.mongodb.net/?retryWrites=true&w=majority")
 
 # Configure the Gemini API
 genai.configure(api_key=GEMINI_API_KEY)
