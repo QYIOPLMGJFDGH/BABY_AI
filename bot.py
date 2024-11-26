@@ -238,7 +238,7 @@ Hey! I am Team Baby AI. How can I help you today? Below are the available comman
 3. <code>/disapprove &lt;username&gt;</code> - Revoke access of a user. (Admin only)
 4. <code>/approved</code> - List all approved users. (Admin only)
 5. <code>/tb &lt;query&gt;</code> - Ask any query or get an baby AI response. 
-   - Example: <code>/tb What is the Taj Mahal?</code>
+   - Example: <code>/tb i want make ai tools?</code>
 6. <code>/run &lt;code&gt;</code> - Execute Python code dynamically (only for authorized users).
 
 <b>Note:</b> You must join our channel @BABY09_WORLD to use this bot.
