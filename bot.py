@@ -419,8 +419,6 @@ async def handle_tb_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await handle_message(update, context)
 
 
-import requests
-
 async def handle_bb_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handles the /bb command to fetch responses from the external API."""
     user_id = update.effective_user.id
@@ -443,7 +441,7 @@ async def handle_bb_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Ensure a query is provided
     if len(context.args) < 1:
         await update.message.reply_text(
-            "Please provide me your query after /bb. For example: `/bb your question`",
+            "Please provide me your query after /bb. For example: `/bb how to make a bot in bussiness code`",
             parse_mode=ParseMode.MARKDOWN
         )
         return
@@ -480,15 +478,15 @@ async def handle_bb_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if "choices" in response_data and len(response_data["choices"]) > 0:
                 result = response_data["choices"][0]["message"]["content"]
                 await update.message.reply_text(
-                    f"{result}\n\nＡɴsᴡᴇʀᴇᴅ ʙʏ ➛ [˹ ʙᴀʙʏ-ᴍᴜsɪᴄ ™˼𓅂](https://t.me/BABY09_WORLD)",
+                    f"{result}",
                     parse_mode=ParseMode.MARKDOWN
                 )
             else:
-                await update.message.reply_text("❍ ᴇʀʀᴏʀ: No response from the API.")
+                await update.message.reply_text("Error: No response from the API.")
         else:
-            await update.message.reply_text(f"❍ ᴇʀʀᴏʀ: API request failed. Status code: {response.status_code}")
+            await update.message.reply_text(f"Error: API request failed. Status code: {response.status_code}")
     except Exception as e:
-        await update.message.reply_text(f"❍ ᴇʀʀᴏʀ: {str(e)}")
+        await update.message.reply_text(f"Error: {str(e)}")
 
 
 def create_application():
