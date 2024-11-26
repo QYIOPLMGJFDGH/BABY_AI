@@ -204,7 +204,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     member_of_channel = await check_user_in_channel(update, context)
 
     if not authorized:
-        await update.message.reply_text("You are not authorized to use this bot. Contact the owner for approval.")
+        await update.message.reply_text("You are not authorized to use this bot. Contact @UTTAM470 for approval.")
         return
     if not member_of_channel:
         await update.message.reply_text(
