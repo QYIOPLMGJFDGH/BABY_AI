@@ -289,13 +289,12 @@ def main():
         MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message)
     )
 
- def run_flask():
+ application.run_polling()
+
+def run_flask():
     flask_app.run(host="0.0.0.0", port=8000)
 
 if __name__ == "__main__":
-    # Flask server in a separate thread
     flask_thread = threading.Thread(target=run_flask)
     flask_thread.start()
-
-    # Run the async bot
-    asyncio.get_event_loop().run_until_complete(init_bot())
+    main()
