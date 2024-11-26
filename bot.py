@@ -289,16 +289,19 @@ flask_app = Flask(__name__)
 @flask_app.route("/")
 def home():
     return "BABYMUSIC is running"
-    
-    # Run the bot
-    application.run_polling()
 
+# Function to run Flask
 def run_flask():
     flask_app.run(host="0.0.0.0", port=8000)
 
+    # Start polling for the bot
+    await application.run_polling()
+
 if __name__ == "__main__":
-    # Flask server in a separate thread
+    # Start Flask server in a separate thread
     flask_thread = threading.Thread(target=run_flask)
+    flask_thread.daemon = True  # Ensure Flask stops when the main program stops
     flask_thread.start()
 
-    asyncio.get_event_loop().run_until_complete(init_bot())
+    # Run the bot
+    asyncio.run(init_bot())
