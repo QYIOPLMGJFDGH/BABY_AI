@@ -239,7 +239,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         # Send a welcome message with the button
         await update.message.reply_text(
-            "Hey! I am team baby AI. How can I help you today? ask me any query",
+            "Hey! I am team baby AI. How can I help you today? ask me any /tb query",
             reply_markup=join_button
         )
     except Exception as e:
@@ -410,7 +410,7 @@ def create_application():
     application.add_handler(CallbackQueryHandler(runtime_callback, pattern="^runtime"))  # Execution time handler
     application.add_handler(CallbackQueryHandler(close_callback, pattern="^forceclose"))  # Close button handler
     application.add_handler(CommandHandler("run", eval_command))  # Eval commandcommand
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    application.add_handler(MessageHandler("tb", handle_message))
 
     return application
 
