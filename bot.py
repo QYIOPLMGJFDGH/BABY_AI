@@ -301,5 +301,4 @@ if __name__ == "__main__":
     flask_thread = threading.Thread(target=run_flask)
     flask_thread.start()
 
-    # Run the main bot function
-    main()
+    asyncio.get_event_loop().run_until_complete(init_bot())
